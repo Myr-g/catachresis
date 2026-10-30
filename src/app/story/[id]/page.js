@@ -1,14 +1,27 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getStory } from "@/app/utils/StoryManager";
+import StoryEditor from "@/components/StoryEditor";
+import "@/app/css/story.css";
 
-export default function StoryEditor()
+export default function Story()
 {
     const params = useParams();
     const id = params.id;
-    
+
+    const [story, setStory] = useState(null);
+
+    useEffect(() => {
+        if(id)
+        {
+            const data = getStory(id);
+            setStory(data ? data : null);
+        }
+    }, [id])
+
     return (
-        <h1>Routing works</h1>
+        <StoryEditor story={story} setStory={setStory}/>
     )
 }

@@ -81,7 +81,7 @@ function createStory(writerId)
         promptType: "none",
         prompt: "",
         promptLocked: false,
-        content: "Lorem Ipsum",
+        content: "",
         collaborators: [],
         createdAt: new Date().toISOString(),
         updatedAt: null
