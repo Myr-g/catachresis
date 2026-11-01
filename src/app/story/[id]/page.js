@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState, useEffect } from 'react';
-import { getStory } from "@/app/utils/StoryManager";
+import { getStory } from "@/app/utils/story-manager";
 import StoryEditor from "@/components/StoryEditor";
 import "@/app/css/story.css";
 

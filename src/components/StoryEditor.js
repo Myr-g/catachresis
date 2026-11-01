@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { saveStory } from "@/app/utils/StoryManager";
+import { saveStory } from "@/app/utils/story-manager";
+import { generatePrompt, generateChallengePrompt } from "@/app/utils/prompt-generator";
+import genres from "@/app/data/genres.json";
 
 export default function StoryEditor({ story, setStory })
 {
@@ -27,6 +29,51 @@ export default function StoryEditor({ story, setStory })
         saveStory({ ...story, title: newTitle});
 
         return newTitle;
+    }
+
+    function updatePromptType(promptType)
+    {
+        const prompt = updatePrompt(promptType);
+
+        const updatedStory = {...story, promptType: promptType, prompt: prompt, updatedAt: new Date().toISOString()};
+
+        setStory(updatedStory);
+        save(updatedStory);
+    }
+
+    function updatePrompt(promptType)
+    {
+        let prompt = "";
+
+        if(promptType === "none")
+        {
+            prompt = "";
+        }
+
+        else if(promptType === "template")
+        {
+            prompt = generatePrompt(story.genre);
+        }
+
+        else if(promptType === "challenge")
+        {
+            prompt = generateChallengePrompt(story.genre);
+        }
+
+        const updatedStory = {...story, prompt: prompt, updatedAt: new Date().toISOString()};
+
+        setStory(updatedStory);
+        saveStory(updatedStory);
+
+        return prompt;
+    }
+
+    function updateGenre(genre)
+    {
+        const updatedStory = {...story, genre: genre, updatedAt: new Date().toISOString()};
+
+        setStory(updatedStory);
+        saveStory(updatedStory);
     }
 
     function updateContent(content)
@@ -101,8 +148,12 @@ export default function StoryEditor({ story, setStory })
                 <div className={showSettings ? "story-settings open" : "story-settings"}>
                     <div className="story-settings-item">
                         <label>Genre</label>
-                        <select className="genre">
+                        <select className="genre" value={story.genre} onChange={(e) => updateGenre(e.target.value)}>
                             <option value="">None</option>
+
+                            {genres.map((genre) => (
+                                <option key={genre} value={genre}>{genre}</option>
+                            ))}
                         </select>
                     </div>
 
@@ -117,19 +168,19 @@ export default function StoryEditor({ story, setStory })
                     <div className="story-settings-item">
                         <label>Prompt</label>
                         <div className="prompt-type-toggle">
-                            <button className="prompt-type active" data-type="none">None</button>
-                            <button className="prompt-type" data-type="template">Template</button>
-                            <button className="prompt-type" data-type="challenge">Challenge</button>
-                            <button className="prompt-type" data-type="community">Community</button>
+                            <button className={story.promptType === "none" ? "prompt-type active" : "prompt-type"} onClick={() => updatePromptType("none")}>None</button>
+                            <button className={story.promptType === "template" ? "prompt-type active" : "prompt-type"} onClick={() => updatePromptType("template")}>Template</button>
+                            <button className={story.promptType === "challenge" ? "prompt-type active" : "prompt-type"} onClick={() => updatePromptType("challenge")}>Challenge</button>
+                            <button className={story.promptType === "community" ? "prompt-type active" : "prompt-type"} onClick={() => updatePromptType("community")}>Community</button>
                         </div>
                     </div>
                 </div>
             </div>
 
             {story.promptType !== "none" && (
-                <div className="workspace-prompt" hidden>
-                    <h3>{story.prompt}</h3>
-                    <button type="button" title="Prompt is locked once you begin writing.">
+                <div className="workspace-prompt">
+                    <h3 className="prompt-text">{story.prompt}</h3>
+                    <button  className="regenerate-prompt" type="button" title="Prompt is locked once you begin writing." onClick={() => updatePrompt(story.promptType)} disabled={story.promptLocked}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
 	                        <path d="M0 0h24v24H0z" fill="none" />
 	                        <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
