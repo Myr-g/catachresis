@@ -3,6 +3,7 @@
 import { getStories, createStory, deleteStory } from "@/app/utils/StoryManager";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function StoryList()
 {
@@ -27,6 +28,8 @@ export default function StoryList()
         localStorage.setItem("writerId", id);
         setWriterId(id);
     }, [])
+
+    const router = useRouter();
 
     function generateExcerpt(content) 
     {
@@ -79,8 +82,8 @@ export default function StoryList()
     return (
         <div className="stories">
             <div className="new-story" onClick={() => {
-                createStory(writerId);
-                setStories(getStories());
+                const story = createStory(writerId);
+                router.push(`/story/${story.id}`);
             }}>+</div>
 
             <h2 className="story-list-label">Stories</h2>
@@ -92,6 +95,7 @@ export default function StoryList()
                             <div className="story-delete-container">
                                 <button className="story-delete-button" onClick={(e) => {
                                     e.stopPropagation();
+                                    e.preventDefault();
                                     deleteStory(story.id);
                                     setStories((prev) => prev.filter(s => s.id !== story.id)); 
                                 }}>
@@ -111,7 +115,7 @@ export default function StoryList()
                             {story.type === "solo" ? "Solo" : "Collaborative"}
                         </p>
 
-                        <p className="story-excerpt">{generateExcerpt(story.content) || "Start writing..."};</p>
+                        <p className="story-excerpt">{generateExcerpt(story.content) || "Start writing..."}</p>
 
                         <p className="story-last-update">{generateLastUpdatedTimestamp(story.updatedAt || story.createdAt)}</p>
                     </Link>
