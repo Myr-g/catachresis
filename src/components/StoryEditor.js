@@ -5,6 +5,8 @@ import Link from "next/link";
 import { saveStory } from "@/app/utils/story-manager";
 import { generatePrompt, generateChallengePrompt } from "@/app/utils/prompt-generator";
 import genres from "@/app/data/genres.json";
+import { formatStoryToTxt } from "@/app/utils/txt-export";
+import { formatStoryToPdf } from "@/app/utils/pdf-export";
 
 export default function StoryEditor({ story, setStory })
 {
@@ -108,6 +110,48 @@ export default function StoryEditor({ story, setStory })
         isDirty.current = false;
         setSaveStatus("saved");
         isSaving.current = false;
+    }
+
+    function txtDownload()
+    {
+        const blob = formatStoryToTxt(story);
+
+        let filename = story.title.replace(/[\\\/:*?"<>|]/g, "");
+
+        if(!filename)
+        {
+            filename = "story";
+        }
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${filename}.txt`;
+        a.click();
+
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    }
+
+    async function pdfDownload()
+    {
+        const blob = await formatStoryToPdf(story);
+
+        let filename = story.title.replace(/[\\\/:*?"<>|]/g, "");
+
+        if(!filename)
+        {
+            filename = "story";
+        }
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${filename}.pdf`;
+        a.click();
+
+        setTimeout(() => URL.revokeObjectURL(url), 100);
     }
 
     if(!story) 
@@ -241,8 +285,8 @@ export default function StoryEditor({ story, setStory })
                         </button>
 
                         <div className={showDownloadMenu ? "download-menu open" : "download-menu"}>
-                            <button className="txt-download">TXT</button>
-                            <button className="pdf-download">PDF</button>
+                            <button className="txt-download" onClick={() => txtDownload()}>TXT</button>
+                            <button className="pdf-download" onClick={async() => await pdfDownload()}>PDF</button>
                         </div>
                     </div>
                 </div>
